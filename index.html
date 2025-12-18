@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bit-Earth Labs: PoE zkBTC-E Minting Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <h1>Bit-Earth Labs</h1>
+            </div>
+            <p class="tagline">Proof-of-Energy zkBTC-E Minting Simulator | Bitcoin-Powered DePIN</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Left Column: Data Upload & Processing -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <h2>Step 1: Upload Energy Generation Data</h2>
+                </div>
+                
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <p>Drag & drop your <strong>datalog.txt</strong> file here</p>
+                    <p class="format-hint">
+                        Expected format: timestamp(ms),voltage_change(V)<br>
+                        Example: 1640995200000,-0.5
+                    </p>
+                    <div id="sampleDataHint" class="sample-hint">
+                        <strong>Sample data line:</strong><br>
+                        <code id="sampleDataLine">Loading...</code>
+                    </div>
+                </div>
+
+                <input type="file" id="fileInput" accept=".txt" class="file-input-hidden">
+                
+                <div class="process-flow">
+                    <div class="flow-step" id="step1">
+                        <div class="step-number">1</div>
+                        <div>
+                            <strong>Data Upload & Validation</strong>
+                            <p class="step-description">Upload your sensor data for processing</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-step" id="step2">
+                        <div class="step-number">2</div>
+                        <div>
+                            <strong>Oracle Verification</strong>
+                            <p class="step-description">BOS Oracle Network validates the data</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-step" id="step3">
+                        <div class="step-number">3</div>
+                        <div>
+                            <strong>Grail Pro Vault Minting</strong>
+                            <p class="step-description">Smart contract executes minting logic</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-step" id="step4">
+                        <div class="step-number">4</div>
+                        <div>
+                            <strong>Distribution & Settlement</strong>
+                            <p class="step-description">Tokens distributed to beneficiaries</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn primary-btn" id="processBtn" disabled>
+                    <i class="fas fa-bolt"></i> Process & Mint zkBTC-E
+                </button>
+            </div>
+
+            <!-- Right Column: Results & Wallet -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">👛</div>
+                    <h2>Step 2: Receive Chain-Agnostic Tokens</h2>
+                </div>
+
+                <p class="instruction-text">
+                    Enter your Cardano wallet address to receive zkBTC-E tokens. These are chain-agnostic and can be bridged to any supported network.
+                </p>
+
+                <input type="text" 
+                       class="wallet-input" 
+                       id="walletAddress" 
+                       placeholder="addr1q9... (Cardano wallet address)"
+                       pattern="^addr1[a-z0-9]+$"
+                       title="Enter a valid Cardano wallet address">
+                
+                <div class="chain-agnostic-badge">
+                    <span>Chain Agnostic Tokens:</span>
+                    <div class="chain-icon bitcoin">₿</div>
+                    <div class="chain-icon cardano">A</div>
+                    <div class="chain-icon monero">M</div>
+                </div>
+
+                <div id="resultsSection" class="hidden">
+                    <div class="results-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">Energy Generated</div>
+                            <div class="metric-value" id="energyGenerated">0 kWh</div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-label">zkBTC-E Minted</div>
+                            <div class="metric-value" id="zkBTCMinted">0</div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-label">To Prosumer</div>
+                            <div class="metric-value" id="toProsumer">0</div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-label">To Treasury</div>
+                            <div class="metric-value" id="toTreasury">0</div>
+                        </div>
+                    </div>
+
+                    <div class="zk-proof" id="zkProof">
+                        <strong>Zero-Knowledge Proof Generated:</strong><br>
+                        <span id="proofContent">Waiting for data...</span>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="#" class="transaction-link" id="txLink">
+                            <i class="fas fa-external-link-alt"></i> View BitcoinOS Explorer
+                        </a>
+                        
+                        <button class="btn secondary-btn" id="bridgeBtn">
+                            <i class="fas fa-bridge"></i> Bridge to Cardano Testnet
+                        </button>
+                    </div>
+
+                    <!-- Burn Mechanism Section -->
+                    <div class="burn-section">
+                        <div class="burn-header">
+                            <i class="fas fa-fire"></i>
+                            <h3>Burn zkBTC-E for Backing Assets</h3>
+                        </div>
+                        
+                        <div class="liquidity-pool">
+                            <strong>Grail Pro Vault Liquidity Pool:</strong>
+                            <p>
+                                Each zkBTC-E is backed by $70 in digital assets
+                            </p>
+                            <div class="asset-icons">
+                                <div class="chain-icon bitcoin">₿</div>
+                                <div class="chain-icon cardano">A</div>
+                                <div class="chain-icon monero">M</div>
+                                <div class="chain-icon dogecoin">Ð</div>
+                                <div class="chain-icon zcash">ⓩ</div>
+                                <div class="chain-icon sovryn-dollar">$</div>
+                            </div>
+                        </div>
+
+                        <div class="conversion-rate">
+                            <strong>Conversion Rate: 1 zkBTC-E = $70</strong><br>
+                            <small>Based on global average MWh price</small>
+                        </div>
+
+                        <div class="asset-selector" id="assetSelector">
+                            <!-- Dynamic content will be inserted by JavaScript -->
+                        </div>
+
+                        <div id="burnControls" class="hidden">
+                            <p class="available-amount">
+                                Available to burn: <strong id="availableToBurn">0</strong> zkBTC-E
+                            </p>
+                            
+                            <input type="text" 
+                                   class="wallet-input" 
+                                   id="assetWalletAddress" 
+                                   placeholder="Enter compatible wallet address for selected asset">
+                            
+                            <div class="burn-address">
+                                <strong>Burn Address:</strong><br>
+                                <span id="burnAddressDisplay">bc1qgrailproburnvaultxyz1234567890abcdef</span>
+                            </div>
+
+                            <button class="btn burn-btn" id="burnBtn">
+                                <i class="fas fa-fire"></i> Burn & Receive Assets
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tokenomics Visualization -->
+        <div class="card tokenomics-card">
+            <div class="card-header">
+                <div class="card-icon">📈</div>
+                <h2>Token Distribution & Economics</h2>
+            </div>
+            
+            <div class="tokenomics-grid">
+                <div class="tokenomics-left">
+                    <div class="distribution-chart">
+                        <div class="distribution-row">
+                            <span>Prosumer (Energy Generator)</span>
+                            <span class="percentage">85%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="prosumerBar" class="progress-fill prosumer-fill"></div>
+                        </div>
+                        
+                        <div class="distribution-row">
+                            <span>Network & Development</span>
+                            <span class="percentage">15%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="treasuryBar" class="progress-fill treasury-fill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="formula-section">
+                        <h3>Live Minting Formula</h3>
+                        <div class="formula-display">
+                            <div id="formulaDisplay">zkBTC-E = Σ(ΔV × 10) × 1.0</div>
+                            <div class="formula-explanation">
+                                Where: ΔV = Voltage change, 10 = conversion factor, 1.0 = energy efficiency coefficient
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tokenomics-right">
+                    <h3>Protocol Benefits</h3>
+                    <ul class="benefits-list">
+                        <li>
+                            <i class="fas fa-shield-alt benefit-icon"></i>
+                            Bitcoin-Secured
+                        </li>
+                        <li>
+                            <i class="fas fa-user-secret benefit-icon"></i>
+                            Zero-Knowledge Privacy
+                        </li>
+                        <li>
+                            <i class="fas fa-sync-alt benefit-icon"></i>
+                            Chain Agnostic
+                        </li>
+                        <li>
+                            <i class="fas fa-coins benefit-icon"></i>
+                            Asset-Backed ($70/zkBTC-E)
+                        </li>
+                        <li>
+                            <i class="fas fa-leaf benefit-icon"></i>
+                            Green Economy
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BitcoinOS Explorer Modal -->
+    <div id="explorerModal" class="explorer-modal">
+        <div class="explorer-content">
+            <div class="explorer-header">
+                <h3><i class="fas fa-search"></i> BitcoinOS Explorer</h3>
+                <span class="close-explorer">&times;</span>
+            </div>
+            <div class="explorer-body">
+                <div class="wallet-info">
+                    <p><strong>Wallet Address:</strong> <span id="explorerWalletAddress">Not connected</span></p>
+                    <p><strong>Total zkBTC-E:</strong> <span id="explorerBalance">0</span></p>
+                    <p><strong>Network:</strong> <span class="network-status">BitcoinOS Testnet</span></p>
+                </div>
+                
+                <div class="tx-controls">
+                    <div class="tx-filter">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="mint">Mints</button>
+                        <button class="filter-btn" data-filter="bridge">Bridges</button>
+                        <button class="filter-btn" data-filter="burn">Burns</button>
+                    </div>
+                    <button class="refresh-btn" id="refreshTxBtn">
+                        <i class="fas fa-redo"></i> Refresh
+                    </button>
+                </div>
+                
+                <div class="tx-history">
+                    <h4>Transaction History</h4>
+                    <div class="tx-list" id="txList">
+                        <div class="tx-placeholder">
+                            <i class="fas fa-history"></i>
+                            <p>No transactions yet</p>
+                            <small>Mint zkBTC-E to see transaction history</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="explorer-footer">
+                <button class="explorer-link" id="fullExplorerBtn">
+                    <i class="fas fa-external-link-alt"></i> Open Full BitcoinOS Explorer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
