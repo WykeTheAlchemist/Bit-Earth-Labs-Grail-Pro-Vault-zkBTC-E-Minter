@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "INVALID_DEVICE_ID",
+    "message": "The provided device ID is invalid",
+    "details": {
+      "device_id": "invalid_id"
+    },
+    "documentation_url": "https://docs.bit-earth.org/errors/INVALID_DEVICE_ID"
+  }
+}
