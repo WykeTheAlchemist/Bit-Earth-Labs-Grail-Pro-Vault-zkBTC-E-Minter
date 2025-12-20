@@ -1,0 +1,142 @@
+name: mint-poe-zkbtc-e
+description: Mint Proof-of-Energy zkBTC-E tokens
+version: 1.0.0
+author: Bit-Earth Labs
+license: MIT
+
+metadata:
+  protocol: Proof-of-Energy
+  unit: 1 zkBTC-E = 1 MWh
+  backing: $70 in multi-asset pool
+
+inputs:
+  - name: poe_packet
+    type: string
+    description: Base64 encoded PoE data packet from IoT sensor
+    required: true
+    
+  - name: zk_proof
+    type: string
+    description: Base64 encoded zk-SNARK proof
+    required: true
+    
+  - name: utxo_proof
+    type: string
+    description: Hex encoded UTXO merkle proof
+    required: true
+    
+  - name: consumer_wallet
+    type: string
+    description: Consumer wallet that made payment
+    required: true
+
+chains:
+  - bitcoin
+  - litecoin
+  - cardano
+  - bitcoinos
+
+dependencies:
+  - contract: poe-zkbtc-minter.wasm
+    version: 1.0.0
+  - contract: grail-vault.wasm
+    version: 1.0.0
+
+actions:
+  - id: parse_inputs
+    type: script
+    script: |
+      const packet = JSON.parse(Buffer.from("{{ inputs.poe_packet }}", 'base64').toString());
+      const proof = JSON.parse(Buffer.from("{{ inputs.zk_proof }}", 'base64').toString());
+      const utxoProof = Buffer.from("{{ inputs.utxo_proof }}", 'hex');
+      return { packet, proof, utxoProof };
+
+  - id: verify_device
+    type: wasm
+    contract: poe-zkbtc-minter.wasm
+    method: check_device_status
+    args:
+      - ${{ parse_inputs.output.packet.device_id }}
+    depends_on: parse_inputs
+
+  - id: verify_zk_proof
+    type: circuit
+    circuit: poe-circuit
+    proof: ${{ parse_inputs.output.proof }}
+    public_inputs: ${{ parse_inputs.output.packet }}
+    depends_on: parse_inputs
+
+  - id: verify_payment
+    type: wasm
+    contract: utxo-verifier.wasm
+    method: verify_utxo_payment
+    args:
+      - ${{ parse_inputs.output.utxoProof }}
+      - ${{ inputs.consumer_wallet }}
+    depends_on: parse_inputs
+
+  - id: calculate_tokens
+    type: script
+    script: |
+      const energyMWh = ${{ parse_inputs.output.packet.energy_wh }} / 1000000;
+      const tokens = Math.floor(energyMWh);
+      const prosumerShare = Math.floor(tokens * 0.85);
+      const protocolShare = tokens - prosumerShare;
+      return { tokens, prosumerShare, protocolShare };
+    depends_on: [verify_device, verify_zk_proof, verify_payment]
+
+  - id: mint_tokens
+    type: wasm
+    contract: poe-zkbtc-minter.wasm
+    method: mint_with_poe
+    args:
+      - ${{ parse_inputs.output.packet }}
+      - ${{ parse_inputs.output.proof }}
+      - ${{ parse_inputs.output.utxoProof }}
+    depends_on: calculate_tokens
+
+  - id: distribute_tokens
+    type: script
+    script: |
+      // Get device wallet from contract state
+      const deviceWallet = await charms.query(
+        'poe-zkbtc-minter.wasm',
+        'get_device_wallet',
+        [${{ parse_inputs.output.packet.device_id }}]
+      );
+      
+      // Distribute 85% to prosumer
+      await charms.transfer(
+        'zkBTC-E',
+        deviceWallet,
+        ${{ calculate_tokens.output.prosumerShare }}
+      );
+      
+      // Distribute 15% to protocol treasury
+      const treasury = await charms.query(
+        'poe-zkbtc-minter.wasm',
+        'get_treasury',
+        []
+      );
+      
+      await charms.transfer(
+        'zkBTC-E',
+        treasury,
+        ${{ calculate_tokens.output.protocolShare }}
+      );
+      
+      return { success: true };
+    depends_on: mint_tokens
+
+outputs:
+  - name: transaction_hash
+    value: ${{ mint_tokens.output.tx_hash }}
+    
+  - name: tokens_minted
+    value: ${{ calculate_tokens.output.tokens }}
+    
+  - name: prosumer_wallet
+    value: ${{ distribute_tokens.output.deviceWallet }}
+    
+  - name: prosumer_share
+    value: ${{ calculate_tokens.output.prosumerShare }}
