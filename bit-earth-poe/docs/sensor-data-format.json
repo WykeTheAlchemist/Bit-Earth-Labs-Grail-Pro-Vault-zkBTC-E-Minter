@@ -1,0 +1,32 @@
+{
+  "device_id": "solar_farm_001",
+  "timestamp": 1672531200000,
+  "readings": [
+    {
+      "type": "voltage",
+      "value": 230.5,
+      "unit": "V",
+      "accuracy": 0.5
+    },
+    {
+      "type": "current",
+      "value": 15.2,
+      "unit": "A",
+      "accuracy": 0.1
+    },
+    {
+      "type": "power",
+      "value": 3500,
+      "unit": "W",
+      "calculated": true
+    }
+  ],
+  "metadata": {
+    "firmware_version": "2.1.0",
+    "sensor_calibration_date": "2024-01-15",
+    "location": {
+      "latitude": 34.0522,
+      "longitude": -118.2437
+    }
+  }
+}
