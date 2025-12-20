@@ -1,0 +1,69 @@
+name: burn-zkbtc-e
+description: Burn zkBTC-E for backing assets on any chain
+version: 1.0.0
+
+inputs:
+  - name: amount
+    type: number
+    required: true
+    
+  - name: target_chain
+    type: string
+    required: true
+    enum: [bitcoin, cardano, ethereum, monero, solana]
+    
+  - name: target_address
+    type: string
+    required: true
+    
+  - name: burn_proof
+    type: string
+    required: true
+
+actions:
+  - id: verify_balance
+    type: wasm
+    contract: poe-zkbtc-minter.wasm
+    method: check_balance
+    args:
+      - ${{ charms.caller }}
+      - ${{ inputs.amount }}
+
+  - id: verify_burn_proof
+    type: circuit
+    circuit: burn-circuit
+    proof: ${{ inputs.burn_proof }}
+    public_inputs:
+      - ${{ charms.caller }}
+      - ${{ inputs.amount }}
+    depends_on: verify_balance
+
+  - id: burn_tokens
+    type: wasm
+    contract: poe-zkbtc-minter.wasm
+    method: burn_for_assets
+    args:
+      - ${{ inputs.amount }}
+      - ${{ inputs.target_chain }}
+      - ${{ inputs.target_address }}
+      - ${{ inputs.burn_proof }}
+    depends_on: verify_burn_proof
+
+  - id: bridge_assets
+    type: crosschain
+    source: bitcoinos
+    target: ${{ inputs.target_chain }}
+    amount: ${{ inputs.amount }}
+    recipient: ${{ inputs.target_address }}
+    asset_type: backing_assets
+    depends_on: burn_tokens
+
+  - id: update_vault
+    type: wasm
+    contract: grail-vault.wasm
+    method: process_redemption
+    args:
+      - ${{ inputs.amount }}
+      - ${{ inputs.target_chain }}
+      - ${{ inputs.target_address }}
+    depends_on: bridge_assets
