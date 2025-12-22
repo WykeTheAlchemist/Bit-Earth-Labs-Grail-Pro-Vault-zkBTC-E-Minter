@@ -1,0 +1,10 @@
+bit-earth-poe/
+├── contracts/         # Smart contracts (Rust/WASM)
+├── circuits/          # zk-SNARK circuits
+├── spells/            # Charms SDK spell definitions
+├── web-app/           # React frontend
+├── oracle-service/    # Oracle backend service
+├── hardware/          # IoT integration code
+├── scripts/           # Deployment and test scripts
+├── examples/          # Hardware/software integration sample code
+└── docs/              # Documentation
