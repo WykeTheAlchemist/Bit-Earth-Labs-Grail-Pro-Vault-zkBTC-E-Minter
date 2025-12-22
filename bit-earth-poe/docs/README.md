@@ -6,14 +6,15 @@ This guide explains how to integrate various components with the Bit-Earth PoE s
 
 ## Table of Contents
 
-1. [Wallet Integration](#wallet-integration)
-2. [IoT Device Integration](#iot-device-integration)
-3. [Oracle Service Integration](#oracle-service-integration)
-4. [Smart Contract Integration](#smart-contract-integration)
-5. [API Reference](#api-reference)
-6. [Webhook Integration](#webhook-integration)
-7. [Mobile App Integration](#mobile-app-integration)
-8. [Enterprise Integration](#enterprise-integration)
+1. [Project Structure and Quick Start Guides](#project-structure-and-quick-start-guide)
+2. [Wallet Integration](#wallet-integration)
+3. [IoT Device Integration](#iot-device-integration)
+4. [Oracle Service Integration](#oracle-service-integration)
+5. [Smart Contract Integration](#smart-contract-integration)
+6. [API Reference](#api-reference)
+7. [Webhook Integration](#webhook-integration)
+8. [Mobile App Integration](#mobile-app-integration)
+9. [Enterprise Integration](#enterprise-integration)
 
 ## Wallet Integration
 
