@@ -1,1 +1,1 @@
-
+Charms SDK spell definitions
