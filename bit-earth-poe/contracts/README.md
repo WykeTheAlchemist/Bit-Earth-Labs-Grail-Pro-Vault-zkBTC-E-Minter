@@ -1,1 +1,1 @@
-
+Smart contracts (Rust/WASM) 
